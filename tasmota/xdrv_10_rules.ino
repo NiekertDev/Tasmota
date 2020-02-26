@@ -233,6 +233,10 @@ bool RulesRuleMatch(uint8_t rule_set, String &event, String &rule)
     if (rule_param.startsWith(stemp)) {
       rule_param = GetDateAndTime(DT_LOCAL).c_str();
     }
+    snprintf_P(stemp, sizeof(stemp), PSTR("%%FAST_REBOOT_COUNT%%"));
+    if (rule_param.startsWith(stemp)) {
+      rule_param = String(RtcReboot.fast_reboot_count);
+    }
 #if defined(USE_TIMERS) && defined(USE_SUNRISE)
     snprintf_P(stemp, sizeof(stemp), PSTR("%%SUNRISE%%"));
     if (rule_param.startsWith(stemp)) {
@@ -474,6 +478,7 @@ bool RuleSetProcess(uint8_t rule_set, String &event_saved)
       RulesVarReplace(commands, F("%UPTIME%"), String(MinutesUptime()));
       RulesVarReplace(commands, F("%TIMESTAMP%"), GetDateAndTime(DT_LOCAL));
       RulesVarReplace(commands, F("%TOPIC%"), SettingsText(SET_MQTT_TOPIC));
+      RulesVarReplace(commands, F("%FAST_REBOOT_COUNT%"), String(RtcReboot.fast_reboot_count));
 #if defined(USE_TIMERS) && defined(USE_SUNRISE)
       RulesVarReplace(commands, F("%SUNRISE%"), String(SunMinutes(0)));
       RulesVarReplace(commands, F("%SUNSET%"), String(SunMinutes(1)));
@@ -1032,6 +1037,8 @@ bool findNextVariableValue(char * &pVarname, float &value)
     value = UtcTime();
   } else if (sVarName.equals(F("LOCALTIME"))) {
     value = LocalTime();
+  } else if (sVarName.equals(F("FAST_REBOOT_COUNT"))) {
+    value = RtcReboot.fast_reboot_count;
 #if defined(USE_TIMERS) && defined(USE_SUNRISE)
   } else if (sVarName.equals(F("SUNRISE"))) {
     value = SunMinutes(0);
